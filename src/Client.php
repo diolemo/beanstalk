@@ -12,6 +12,9 @@ namespace Beanstalk;
 
 use RuntimeException;
 
+// Beanstalk\Job
+require_once 'Job.php';
+
 /**
  * An interface to the beanstalk queue service. Implements the beanstalk
  * protocol spec 1.9. Where appropriate the documentation from the protocol
@@ -216,6 +219,7 @@ class Client {
 	/**
 	 * The `put` command is for any process that wants to insert a job into the queue.
 	 *
+	 * @param string $data The job body.
 	 * @param integer $pri Jobs with smaller priority values will be scheduled
 	 *        before jobs with larger priorities. The most urgent priority is
 	 *        0; the least urgent priority is 4294967295.
@@ -223,11 +227,10 @@ class Client {
 	 *        ready queue.  The job will be in the "delayed" state during this time.
 	 * @param integer $ttr Time to run - Number of seconds to allow a worker to
 	 *        run this job.  The minimum ttr is 1.
-	 * @param string $data The job body.
 	 * @return integer|boolean `false` on error otherwise an integer indicating
 	 *         the job id.
 	 */
-	public function put($pri, $delay, $ttr, $data) {
+	public function put($data, $pri = 0, $delay = 0, $ttr = 86400) {
 		$this->_write(sprintf("put %d %d %d %d\r\n%s", $pri, $delay, $ttr, strlen($data), $data));
 		$status = strtok($this->_read(), ' ');
 
@@ -294,8 +297,7 @@ class Client {
 	 *
 	 * @param integer $timeout If given specifies number of seconds to wait for
 	 *        a job. `0` returns immediately.
-	 * @return array|false `false` on error otherwise an array holding job id
-	 *         and body.
+	 * @return Job|false `false` on error otherwise a job object.
 	 */
 	public function reserve($timeout = null) {
 		if (isset($timeout)) {
@@ -307,10 +309,10 @@ class Client {
 
 		switch ($status) {
 			case 'RESERVED':
-				return [
-					'id' => (integer) strtok(' '),
-					'body' => $this->_read((integer) strtok(' '))
-				];
+				$job = new Job($this);
+				$job->id = (integer) strtok(' ');
+				$job->body = $this->_read((integer) strtok(' '));
+				return $job;
 			case 'DEADLINE_SOON':
 			case 'TIMED_OUT':
 			default:
