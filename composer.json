@@ -1,8 +1,8 @@
 {
-    "name": "davidpersson/beanstalk",
+    "name": "diolemo/beanstalk",
     "description": "Minimalistic PHP client for beanstalkd.",
     "keywords": ["queue", "socket", "beanstalk", "beanstalkd"],
-    "homepage": "https://github.com/davidpersson/beanstalk",
+    "homepage": "https://github.com/diolemo/beanstalk",
     "license": "MIT",
     "authors": [
         {
