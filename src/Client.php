@@ -82,7 +82,7 @@ class Client {
 	 */
 	public function __construct(array $config = []) {
 		$defaults = [
-			'persistent' => true,
+			'persistent' => false,
 			'host' => '127.0.0.1',
 			'port' => 11300,
 			'timeout' => 1,
